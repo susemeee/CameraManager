@@ -527,7 +527,7 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
      
      :param: imageCompletion Completion block containing the captured UIImage
      */
-    open func capturePictureWithCompletion(_ imageCompletion: @escaping (CaptureResult) -> Void) {
+    open func capturePictureWithCompletion(_ imageCompletion: @escaping (CaptureResult) -> Void, _ imageProcessing: ((UIImage) -> UIImage)? = nil) {
         self.capturePictureDataWithCompletion { result in
 
             guard let imageData = result.imageData else {
@@ -543,10 +543,10 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
             
             if self.animateShutter {
                 self._performShutterAnimation {
-                    self._capturePicture(imageData, imageCompletion)
+                    self._capturePicture(imageData, imageCompletion, imageProcessing)
                 }
             } else {
-                self._capturePicture(imageData, imageCompletion)
+                self._capturePicture(imageData, imageCompletion, imageProcessing)
             }
         }
     }
