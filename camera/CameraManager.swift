@@ -557,9 +557,11 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
             return
         }
 
-        var image = fixOrientation(withImage: img)
+        var image: UIImage
         if let ip = imageProcessing {
-            image = ip(image)
+            image = fixOrientation(withImage: ip(img))
+        } else {
+            image = fixOrientation(withImage: img)
         }
         
         if writeFilesToPhoneLibrary {
