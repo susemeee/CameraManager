@@ -337,6 +337,17 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
         return AVCaptureDevice.videoDevices.filter { $0.position == .back }.first
     }()
     
+    open var currentCaptureDevice: AVCaptureDevice? {
+        get {
+            switch (cameraDevice) {
+            case .back:
+                return self.backCameraDevice
+            case .front:
+                return self.frontCameraDevice
+            }
+        }
+    }
+    
     fileprivate lazy var mic: AVCaptureDevice? = {
         return AVCaptureDevice.default(for: AVMediaType.audio)
     }()
@@ -540,13 +551,16 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
         }
     }
     
-    fileprivate func _capturePicture(_ imageData: Data, _ imageCompletion: @escaping (CaptureResult) -> Void) {
+    fileprivate func _capturePicture(_ imageData: Data, _ imageCompletion: @escaping (CaptureResult) -> Void, _ imageProcessing: ((UIImage) -> UIImage)? = nil) {
         guard let img = UIImage(data: imageData) else {
             imageCompletion(.failure(NSError()))
             return
         }
-        
-        let image = fixOrientation(withImage: img)
+
+        var image = fixOrientation(withImage: img)
+        if let ip = imageProcessing {
+            image = ip(image)
+        }
         
         if writeFilesToPhoneLibrary {
             
