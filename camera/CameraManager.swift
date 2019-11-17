@@ -1213,7 +1213,7 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
 
             let p = Float64(pow(value, exposureDurationPower)) // Apply power function to expand slider's low-end range
             let minDurationSeconds = Float64(max(CMTimeGetSeconds(videoDevice.activeFormat.minExposureDuration), exposureMinimumDuration))
-            let maxDurationSeconds = Float64(max(CMTimeGetSeconds(videoDevice.activeFormat.maxExposureDuration), exposureMaximumDuration))
+            let maxDurationSeconds = Float64(min(CMTimeGetSeconds(videoDevice.activeFormat.maxExposureDuration), exposureMaximumDuration))
             let newDurationSeconds = Float64(p * (maxDurationSeconds - minDurationSeconds)) + minDurationSeconds // Scale from 0-1 slider range to actual duration
 
             if (videoDevice.exposureMode == .custom) {
