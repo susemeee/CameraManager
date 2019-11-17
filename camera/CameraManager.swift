@@ -543,54 +543,50 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
 
             if self.animateShutter {
                 self._performShutterAnimation {
-                    self._capturePicture(imageData, imageCompletion, imageProcessing)
+                    self._capturePicture(imageData, imageCompletion)
                 }
             } else {
-                self._capturePicture(imageData, imageCompletion, imageProcessing)
+                self._capturePicture(imageData, imageCompletion)
             }
         }
     }
 
-    fileprivate func _capturePicture(_ imageData: Data, _ imageCompletion: @escaping (CaptureResult) -> Void, _ imageProcessing: ((UIImage) -> UIImage)? = nil) {
+    fileprivate func _capturePicture(_ imageData: Data, _ imageCompletion: @escaping (CaptureResult) -> Void) {
         guard let img = UIImage(data: imageData) else {
             imageCompletion(.failure(NSError()))
             return
         }
 
-        var image: UIImage
-        if let ip = imageProcessing {
-            image = ip(img)
-        } else {
-            image = fixOrientation(withImage: img)
-        }
-
         if writeFilesToPhoneLibrary {
-
-            let filePath = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("tempImg\(Int(Date().timeIntervalSince1970)).jpg")
-            let newImageData = _imageDataWithEXIF(forImage: image, imageData) as Data
-
-            do {
-
-                try newImageData.write(to: filePath)
-
-                // make sure that doesn't fail the first time
-                if PHPhotoLibrary.authorizationStatus() != .authorized {
-                    PHPhotoLibrary.requestAuthorization { (status) in
-                        if status == PHAuthorizationStatus.authorized {
-                            self._saveImageToLibrary(atFileURL: filePath, imageCompletion)
-                        }
-                    }
-                } else {
-                    self._saveImageToLibrary(atFileURL: filePath, imageCompletion)
-                }
-
-            } catch {
-                imageCompletion(.failure(error))
-                return
-            }
+            self.writeImageFileToPhotoLibrary(forImage: img, imageData, imageCompletion)
+        } else {
+            imageCompletion(CaptureResult(img))
         }
+    }
+    
+    open func writeImageFileToPhotoLibrary(forImage image: UIImage, _ imageData: Data, _ imageCompletion: @escaping (CaptureResult) -> Void) {
 
-        imageCompletion(CaptureResult(image))
+        let filePath = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("tempImg\(Int(Date().timeIntervalSince1970)).jpg")
+        let newImageData = _imageDataWithEXIF(forImage: image, imageData) as Data
+
+        do {
+            try newImageData.write(to: filePath)
+
+            // make sure that doesn't fail the first time
+            if PHPhotoLibrary.authorizationStatus() != .authorized {
+                PHPhotoLibrary.requestAuthorization { (status) in
+                    if status == PHAuthorizationStatus.authorized {
+                        self._saveImageToLibrary(atFileURL: filePath, imageCompletion)
+                    }
+                }
+            } else {
+                self._saveImageToLibrary(atFileURL: filePath, imageCompletion)
+            }
+
+        } catch {
+            imageCompletion(.failure(error))
+            return
+        }
     }
 
     fileprivate func _setVideoWithGPS(forLocation location: CLLocation) {
