@@ -123,6 +123,9 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
 
     // MARK: - Public properties
 
+    @available(iOS 11, macOS 10.13, *)
+    lazy open var useHeic: Bool = false
+
     // Property for custom image album name.
     open var imageAlbumName: String?
 
@@ -567,7 +570,12 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
     
     open func writeImageFileToPhotoLibrary(forImage image: UIImage, _ imageData: Data, _ imageCompletion: @escaping (CaptureResult) -> Void) {
 
-        let filePath = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("tempImg\(Int(Date().timeIntervalSince1970)).jpg")
+        var ext = "jpg"
+        if #available(iOS 11, *) {
+            ext = self.useHeic == true ? "heic" : "jpg"
+        }
+
+        let filePath = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("\(self.imageAlbumName ?? "tempimg")\(Int(Date().timeIntervalSince1970)).\(ext)")
         let newImageData = _imageDataWithEXIF(forImage: image, imageData) as Data
 
         do {
@@ -603,8 +611,13 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
         // get EXIF info
         let cgImage = image.cgImage
         let newImageData:CFMutableData = CFDataCreateMutable(nil, 0)
-        let type = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, "image/jpg" as CFString, kUTTypeImage)
-        let destination:CGImageDestination = CGImageDestinationCreateWithData(newImageData, (type?.takeRetainedValue())!, 1, nil)!
+
+        var mimeTag = "image/jpg"
+        if #available(iOS 11, *) {
+            mimeTag = (self.useHeic == true ? "image/heif" : "image/jpg")
+        }
+        let type = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimeTag as CFString, kUTTypeImage)
+        let destination: CGImageDestination = CGImageDestinationCreateWithData(newImageData, (type?.takeRetainedValue())!, 1, nil)!
 
         let imageSourceRef = CGImageSourceCreateWithData(imageData as CFData, nil)
         let currentProperties = CGImageSourceCopyPropertiesAtIndex(imageSourceRef!, 0, nil)
