@@ -575,7 +575,7 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
             ext = self.useHeic == true ? "heic" : "jpg"
         }
 
-        let filePath = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("\(self.imageAlbumName ?? "tempimg")\(Int(Date().timeIntervalSince1970)).\(ext)")
+        let filePath = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("\(self.imageAlbumName ?? "tempimg")-\(Int(Date().timeIntervalSince1970)).\(ext)")
         let newImageData = _imageDataWithEXIF(forImage: image, imageData) as Data
 
         do {
@@ -612,12 +612,14 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
         let cgImage = image.cgImage
         let newImageData:CFMutableData = CFDataCreateMutable(nil, 0)
 
-        var mimeTag = "image/jpg"
+        var type = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, "image/jpg" as CFString, kUTTypeImage)?.takeRetainedValue()
         if #available(iOS 11, *) {
-            mimeTag = (self.useHeic == true ? "image/heif" : "image/jpg")
+            if self.useHeic == true {
+                type = AVFileType.heic as CFString
+            }
         }
-        let type = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimeTag as CFString, kUTTypeImage)
-        let destination: CGImageDestination = CGImageDestinationCreateWithData(newImageData, (type?.takeRetainedValue())!, 1, nil)!
+
+        let destination: CGImageDestination = CGImageDestinationCreateWithData(newImageData, type!, 1, nil)!
 
         let imageSourceRef = CGImageSourceCreateWithData(imageData as CFData, nil)
         let currentProperties = CGImageSourceCopyPropertiesAtIndex(imageSourceRef!, 0, nil)
