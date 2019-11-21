@@ -530,7 +530,7 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
 
      :param: imageCompletion Completion block containing the captured UIImage
      */
-    open func capturePictureWithCompletion(_ imageCompletion: @escaping (CaptureResult) -> Void, forOrientation orientation: UIDeviceOrientation? = nil) {
+    open func capturePictureWithCompletion(_ imageCompletion: @escaping (CaptureResult) -> Void) {
         self.capturePictureDataWithCompletion { result in
 
             guard let imageData = result.imageData else {
@@ -554,9 +554,9 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
         }
     }
 
-    fileprivate func _capturePicture(_ imageData: Data, _ imageCompletion: @escaping (CaptureResult) -> Void, forOrientation orientation: UIDeviceOrientation? = nil) {
+    fileprivate func _capturePicture(_ imageData: Data, _ imageCompletion: @escaping (CaptureResult) -> Void) {
 
-        guard let img = UIImage(data: imageData)?.fixedOrientation(orientation) else {
+        guard let img = UIImage(data: imageData) else {
             imageCompletion(.failure(NSError()))
             return
         }
