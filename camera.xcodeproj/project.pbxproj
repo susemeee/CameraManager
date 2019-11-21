@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1A662A6723868510003BCB06 /* UIImage+FixedOrientation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A662A6623868510003BCB06 /* UIImage+FixedOrientation.swift */; };
 		454C1F4719E82E2500C81915 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 454C1F4619E82E2500C81915 /* AppDelegate.swift */; };
 		454C1F4919E82E2500C81915 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 454C1F4819E82E2500C81915 /* ViewController.swift */; };
 		454C1F4C19E82E2500C81915 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 454C1F4A19E82E2500C81915 /* Main.storyboard */; };
@@ -44,6 +45,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1A662A6623868510003BCB06 /* UIImage+FixedOrientation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+FixedOrientation.swift"; sourceTree = "<group>"; };
 		454C1F4119E82E2500C81915 /* camera.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = camera.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		454C1F4519E82E2500C81915 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		454C1F4619E82E2500C81915 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -128,6 +130,7 @@
 		D71DE8821AD677A7001E62F1 /* CameraManager */ = {
 			isa = PBXGroup;
 			children = (
+				1A662A6623868510003BCB06 /* UIImage+FixedOrientation.swift */,
 				D71DE8851AD677A7001E62F1 /* CameraManager.h */,
 				454C1F6619E8316A00C81915 /* CameraManager.swift */,
 				D71DE8831AD677A7001E62F1 /* Supporting Files */,
@@ -220,6 +223,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -270,6 +274,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D71DE8A11AD677EF001E62F1 /* CameraManager.swift in Sources */,
+				1A662A6723868510003BCB06 /* UIImage+FixedOrientation.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
