@@ -1952,8 +1952,8 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
     }
 }
 
-public class ContentEditingPipeline {
-    @objc var adjustmentData: PHAdjustmentData
+@objcMembers public class ContentEditingPipeline {
+    var adjustmentData: PHAdjustmentData
     var adjustedImageData: Data
 
     public init(adjustmentData: PHAdjustmentData, adjustedImageData: Data) {
@@ -2088,6 +2088,8 @@ extension PHPhotoLibrary {
                 let assets:PHFetchResult<PHAsset> =  PHAsset.fetchAssets(withLocalIdentifiers: [placeholder.localIdentifier], options: nil)
                 let asset:PHAsset? = assets.firstObject
                 completion?(asset)
+            } else {
+                completion?(nil)
             }
         })
     }
