@@ -1956,7 +1956,7 @@ public class ContentEditingPipeline {
     var adjustmentData: PHAdjustmentData
     var adjustedImageData: Data
 
-    init(adjustmentData: PHAdjustmentData, adjustedImageData: Data) {
+    public init(adjustmentData: PHAdjustmentData, adjustedImageData: Data) {
         self.adjustmentData = adjustmentData
         self.adjustedImageData = adjustedImageData
     }
