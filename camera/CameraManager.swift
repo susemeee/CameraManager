@@ -1963,7 +1963,7 @@ public class ContentEditingPipeline {
 }
 
 fileprivate extension AVCaptureDevice {
-    fileprivate static var videoDevices: [AVCaptureDevice] {
+    static var videoDevices: [AVCaptureDevice] {
         return AVCaptureDevice.devices(for: AVMediaType.video)
     }
 }
