@@ -568,7 +568,7 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
         }
     }
     
-    open func writeImageFileToPhotoLibrary(forImage image: UIImage, _ imageData: Data, _ imageCompletion: @escaping (CaptureResult) -> Void) {
+    open func writeImageFileToPhotoLibrary(forImage image: UIImage, _ imageData: Data, contentEditingPipeline: ContentEditingPipeline? = nil, _ imageCompletion: @escaping (CaptureResult) -> Void) {
 
         var ext = "jpg"
         if #available(iOS 11, *) {
@@ -585,11 +585,11 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
             if PHPhotoLibrary.authorizationStatus() != .authorized {
                 PHPhotoLibrary.requestAuthorization { (status) in
                     if status == PHAuthorizationStatus.authorized {
-                        self._saveImageToLibrary(atFileURL: filePath, imageCompletion)
+                        self._saveImageToLibrary(atFileURL: filePath, contentEditingPipeline, imageCompletion)
                     }
                 }
             } else {
-                self._saveImageToLibrary(atFileURL: filePath, imageCompletion)
+                self._saveImageToLibrary(atFileURL: filePath, contentEditingPipeline, imageCompletion)
             }
 
         } catch {
@@ -663,12 +663,12 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
         return GPSMetadata
     }
 
-    fileprivate func _saveImageToLibrary(atFileURL filePath: URL, _ imageCompletion: @escaping (CaptureResult) -> Void) {
+    fileprivate func _saveImageToLibrary(atFileURL filePath: URL, _ contentEditingPipeline: ContentEditingPipeline? = nil, _ imageCompletion: @escaping (CaptureResult) -> Void) {
 
         let location = self.locationManager?.latestLocation
         let date = Date()
 
-        library?.save(imageAtURL: filePath, albumName: self.imageAlbumName, date: date, location: location) { asset in
+        library?.save(imageAtURL: filePath, albumName: self.imageAlbumName, date: date, location: location, contentEditingPipeline: contentEditingPipeline) { asset in
 
             if let asset = asset {
                 imageCompletion(CaptureResult(asset))
@@ -1952,6 +1952,16 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
     }
 }
 
+public class ContentEditingPipeline {
+    var adjustmentData: PHAdjustmentData
+    var adjustedImageData: Data
+
+    init(adjustmentData: PHAdjustmentData, adjustedImageData: Data) {
+        self.adjustmentData = adjustmentData
+        self.adjustedImageData = adjustedImageData
+    }
+}
+
 fileprivate extension AVCaptureDevice {
     fileprivate static var videoDevices: [AVCaptureDevice] {
         return AVCaptureDevice.devices(for: AVMediaType.video)
@@ -1972,14 +1982,14 @@ extension PHPhotoLibrary {
         }
     }
 
-    func save(imageAtURL: URL, albumName: String?, date: Date = Date(), location: CLLocation? = nil, completion:((PHAsset?) -> ())? = nil) {
+    func save(imageAtURL: URL, albumName: String?, date: Date = Date(), location: CLLocation? = nil, contentEditingPipeline: ContentEditingPipeline? = nil, completion:((PHAsset?) -> ())? = nil) {
         func save() {
             if let albumName = albumName {
                 self.getAlbum(name: albumName) { album in
-                    self.saveImage(imageAtURL: imageAtURL, album: album, date: date, location: location, completion: completion)
+                    self.saveImage(imageAtURL: imageAtURL, album: album, date: date, location: location, contentEditingPipeline: contentEditingPipeline, completion: completion)
                 }
             } else {
-                 self.saveImage(imageAtURL: imageAtURL, album: nil, date: date, location: location, completion: completion)
+                self.saveImage(imageAtURL: imageAtURL, album: nil, date: date, location: location, contentEditingPipeline: contentEditingPipeline, completion: completion)
             }
 
         }
@@ -2043,19 +2053,31 @@ extension PHPhotoLibrary {
         })
     }
 
-    fileprivate func saveImage(imageAtURL: URL, album: PHAssetCollection?, date: Date = Date(), location: CLLocation? = nil, completion:((PHAsset?) -> ())? = nil) {
+    fileprivate func saveImage(imageAtURL: URL, album: PHAssetCollection?, date: Date = Date(), location: CLLocation? = nil, contentEditingPipeline: ContentEditingPipeline? = nil, completion:((PHAsset?) -> ())? = nil) {
         var placeholder: PHObjectPlaceholder?
         self.performChanges({
             let createAssetRequest = PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: imageAtURL)!
             createAssetRequest.creationDate = date
             createAssetRequest.location = location
+
             if let album = album {
                 guard let albumChangeRequest = PHAssetCollectionChangeRequest(for: album),
                     let photoPlaceholder = createAssetRequest.placeholderForCreatedAsset else { return }
                 placeholder = photoPlaceholder
+
+                do {
+                    if let pipeline = contentEditingPipeline {
+                        let output = PHContentEditingOutput(placeholderForCreatedAsset: photoPlaceholder)
+                        output.adjustmentData = pipeline.adjustmentData
+                        try pipeline.adjustedImageData.write(to: output.renderedContentURL, options: .atomic)
+                        createAssetRequest.contentEditingOutput = output
+                    }
+                } catch (let error) {
+                    print(error)
+                }
+
                 let fastEnumeration = NSArray(array: [photoPlaceholder] as [PHObjectPlaceholder])
                 albumChangeRequest.addAssets(fastEnumeration)
-
             }
 
         }, completionHandler: { success, error in
