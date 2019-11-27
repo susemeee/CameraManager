@@ -1953,7 +1953,7 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
 }
 
 public class ContentEditingPipeline {
-    var adjustmentData: PHAdjustmentData
+    @objc var adjustmentData: PHAdjustmentData
     var adjustedImageData: Data
 
     public init(adjustmentData: PHAdjustmentData, adjustedImageData: Data) {
